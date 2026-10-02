@@ -1,10 +1,10 @@
-name: Android Build CI
+name: Android CI
 
 on:
   push:
-    branches: [ "jules", "main", "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "jules", "main", "master" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
