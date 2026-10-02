@@ -128,13 +128,42 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // first make sure the necessary permissions are given
         checkPermissionsIfNeccessary();
 
+        copyBriefFilesFromAssets();
+
         if (!checkBriefFileExistance()) {
             Log.e(TAG, "Brief files not found here: " + directoryPathBriefFiles);
-            finish();
         }
         initLooper();
         initVINS();
         initViews();
+    }
+
+    private void copyBriefFilesFromAssets() {
+        File directoryFile = new File(directoryPathBriefFiles);
+        if (!directoryFile.exists()) {
+            directoryFile.mkdirs();
+        }
+
+        copyAssetFile("brief_k10L6.bin", new File(directoryFile, "brief_k10L6.bin"));
+        copyAssetFile("brief_pattern.yml", new File(directoryFile, "brief_pattern.yml"));
+    }
+
+    private void copyAssetFile(String assetName, File outFile) {
+        if (outFile.exists() && outFile.length() > 0) {
+            return;
+        }
+        try (java.io.InputStream in = getAssets().open(assetName);
+             java.io.FileOutputStream out = new java.io.FileOutputStream(outFile)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            out.flush();
+            Log.i(TAG, "Successfully copied asset " + assetName + " to " + outFile.getAbsolutePath());
+        } catch (java.io.IOException e) {
+            Log.e(TAG, "Error copying asset " + assetName, e);
+        }
     }
 
     /**
@@ -327,14 +356,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // get the StepSize of the auto exposure compensation
         Rational aeCompStepSize = characteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
         if (aeCompStepSize == null) {
-            Log.e(TAG, "Camera doesn't support setting Auto-Exposure Compensation");
-            finish();
+            Log.w(TAG, "Camera doesn't support setting Auto-Exposure Compensation");
+        } else {
+            Log.d(TAG, "AE Compensation StepSize: " + aeCompStepSize);
+            int aeCompensationInSteps = aeCompensation * aeCompStepSize.getDenominator() / aeCompStepSize.getNumerator();
+            Log.d(TAG, "aeCompensationInSteps: " + aeCompensationInSteps);
+            previewBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensationInSteps);
         }
-        Log.d(TAG, "AE Compensation StepSize: " + aeCompStepSize);
-
-        int aeCompensationInSteps = aeCompensation * aeCompStepSize.getDenominator() / aeCompStepSize.getNumerator();
-        Log.d(TAG, "aeCompensationInSteps: " + aeCompensationInSteps);
-        previewBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensationInSteps);
 
         // set the camera output frequency to 30Hz
         previewBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<Integer>(framesPerSecond, framesPerSecond));

@@ -1,5 +1,4 @@
-#set(boost_include_dir /home/vell/workspace/boost_1_63_0/)
-set(boost_include_dir /data/gitRepository/VINS-Mobile-Android/app/libs/VINS-Mobile-master/VINS_ThirdPartyLib/boost_1_63_0/)
+set(boost_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_63_0/)
 add_library(boost_LIB INTERFACE)
 target_include_directories(
     boost_LIB
@@ -20,6 +19,7 @@ target_include_directories(
 )
 
 set(ceres_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/ceres-solver/include)
+set(ceres_config_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/ceres-solver/config)
 set(ceres_miniglog_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/ceres-solver/internal/ceres/miniglog)
 set(ceres_binary_dir ${CMAKE_CURRENT_SOURCE_DIR}/ceres-solver/obj/local/${ANDROID_ABI}/libceres.a)
 add_library(
@@ -41,5 +41,6 @@ set_target_properties(
 set_target_properties( 
     ceres_LIB
     PROPERTIES INTERFACE_INCLUDE_DIRECTORIES 
-    "${ceres_include_dir};${ceres_miniglog_include_dir}"
+    "${ceres_include_dir};${ceres_config_include_dir};${ceres_miniglog_include_dir}"
 )
+target_compile_definitions(ceres_LIB INTERFACE CERES_NO_THREADS)
