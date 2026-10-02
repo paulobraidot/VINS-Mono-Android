@@ -48,7 +48,7 @@ fi
 
 # Patch Ceres Application.mk & Android.mk for arm64-v8a + frtti
 echo "Patching Ceres Solver build files..."
-sed -i 's/-fno-rtti/-frtti/g' "$THIRD_PARTY_DIR/ceres-solver/jni/Application.mk"
+sed -i 's/-fno-rtti/-frtti -Wno-deprecated-declarations -Wno-error/g' "$THIRD_PARTY_DIR/ceres-solver/jni/Application.mk"
 sed -i 's/APP_ABI := armeabi-v7a/APP_ABI := arm64-v8a/g' "$THIRD_PARTY_DIR/ceres-solver/jni/Application.mk"
 if ! grep -q "thread_token_provider.cc" "$THIRD_PARTY_DIR/ceres-solver/jni/Android.mk"; then
     sed -i '/subset_preconditioner.cc/a \                   $(CERES_SRC_PATH)/thread_token_provider.cc \\' "$THIRD_PARTY_DIR/ceres-solver/jni/Android.mk"
@@ -57,10 +57,10 @@ fi
 # Build Ceres Solver using ndk-build
 echo "Building Ceres Solver..."
 NDK_BUILD_CMD=""
-if [ -n "$ANDROID_NDK_HOME" ] && [ -f "$ANDROID_NDK_HOME/ndk-build" ]; then
-    NDK_BUILD_CMD="$ANDROID_NDK_HOME/ndk-build"
-elif [ -n "$ANDROID_HOME" ] && [ -f "$ANDROID_HOME/ndk/22.0.7026061/ndk-build" ]; then
+if [ -n "$ANDROID_HOME" ] && [ -f "$ANDROID_HOME/ndk/22.0.7026061/ndk-build" ]; then
     NDK_BUILD_CMD="$ANDROID_HOME/ndk/22.0.7026061/ndk-build"
+elif [ -n "$ANDROID_NDK_HOME" ] && [ -f "$ANDROID_NDK_HOME/ndk-build" ]; then
+    NDK_BUILD_CMD="$ANDROID_NDK_HOME/ndk-build"
 elif [ -n "$ANDROID_NDK" ] && [ -f "$ANDROID_NDK/ndk-build" ]; then
     NDK_BUILD_CMD="$ANDROID_NDK/ndk-build"
 else
